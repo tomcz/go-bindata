@@ -1,6 +1,9 @@
-.PHONY: all test clean build testdata
+.PHONY: all format test clean build testdata
 
-all: clean test build testdata
+all: clean format test build testdata
+
+format:
+	go fmt ./...
 
 test:
 	go test ./...
