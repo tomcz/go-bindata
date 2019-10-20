@@ -1,7 +1,3 @@
-# Warning
-
-**this repository is not maintained. Questions or suggestions can be posted [here](https://github.com/jteeuwen/discussions/issues).**
-
 ## bindata
 
 This package converts any file into managable Go source code. Useful for
@@ -17,7 +13,7 @@ output being generated.
 
 To install the library and command line program, use the following:
 
-	go get -u github.com/tomcz/go-bindata/...
+	GO111MODULE=off go get -u github.com/tomcz/go-bindata/go-bindata
 
 
 ### Usage
