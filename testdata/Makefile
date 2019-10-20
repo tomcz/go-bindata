@@ -1,37 +1,40 @@
 FILES:=$(wildcard out/*.go)
 
+GOPATH := $(shell go env GOPATH)
+GOLINT := ${GOPATH}/bin/golint
+ERRCHECK := ${GOPATH}/bin/errcheck
+
 .PHONY: check
-check: errcheck vet golint $(FILES:.go=.checked)
+check: ${ERRCHECK} ${GOLINT} $(FILES:.go=.checked)
 
 out/%.checked: out/%.go
-	errcheck $<
-	go tool vet --all $<
-	go tool vet --shadow $<
-	golint $<
+	${ERRCHECK} $<
+	go vet $<
+	${GOLINT} $<
 
-$(GOPATH)/bin/go-bindata: $(wildcard ../*.go) $(wildcard ../**/*.go)
-	go install ../...
+.PHONY: build
+build:
+	rm -rf target
+	mkdir target
+	go build -o target/go-bindata ../go-bindata
 
-out/compress-memcopy.go: 		 $(wildcard in/**/*) $(GOPATH)/bin/go-bindata
-	$(GOPATH)/bin/go-bindata                        -o $@ in/...
+out/compress-memcopy.go: $(wildcard in/**/*) build
+	./target/go-bindata -o $@ in/...
 
-out/compress-nomemcopy.go: 	 $(wildcard in/**/*) $(GOPATH)/bin/go-bindata
-	$(GOPATH)/bin/go-bindata -nomemcopy             -o $@ in/...
+out/compress-nomemcopy.go: $(wildcard in/**/*) build
+	./target/go-bindata -nomemcopy -o $@ in/...
 
-out/debug.go: 							 $(wildcard in/**/*) $(GOPATH)/bin/go-bindata
-	$(GOPATH)/bin/go-bindata -debug                 -o $@ in/...
+out/debug.go: $(wildcard in/**/*) build
+	./target/go-bindata -debug -o $@ in/...
 
-out/nocompress-memcopy.go:   $(wildcard in/**/*) $(GOPATH)/bin/go-bindata
-	$(GOPATH)/bin/go-bindata -nocompress            -o $@ in/...
+out/nocompress-memcopy.go: $(wildcard in/**/*) build
+	./target/go-bindata -nocompress -o $@ in/...
 
-out/nocompress-nomemcopy.go: $(wildcard in/**/*) $(GOPATH)/bin/go-bindata
-	$(GOPATH)/bin/go-bindata -nocompress -nomemcopy -o $@ in/...
+out/nocompress-nomemcopy.go: $(wildcard in/**/*) build
+	./target/go-bindata -nocompress -nomemcopy -o $@ in/...
 
-errcheck:
-	go get github.com/kisielk/errcheck
+${ERRCHECK}:
+	go get -u github.com/kisielk/errcheck
 
-vet:
-	go get golang.org/x/tools/cmd/vet
-
-golint:
-	go get github.com/golang/lint/golint
+${GOLINT}:
+	go get -u golang.org/x/lint/golint
